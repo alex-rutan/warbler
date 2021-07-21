@@ -37,4 +37,8 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[Length(min=6)])
 
 
+class CsrfOnlyForm(FlaskForm):
+    """TODO"""
+
+
 

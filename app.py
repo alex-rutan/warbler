@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm, UpdateUserForm
+from forms import UserAddForm, LoginForm, MessageForm, UpdateUserForm, CsrfOnlyForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -30,6 +30,10 @@ connect_db(app)
 
 ##############################################################################
 # User signup/login/logout
+
+@app.before_first_request
+def create_csrf_only_form():
+    g.csrf_form = CsrfOnlyForm()
 
 
 @app.before_request
@@ -116,9 +120,12 @@ def login():
 def logout():
     """Handle logout of user."""
 
-   
-    do_logout()
-    flash('User successfully logged out')
+    if g.user:
+        do_logout()
+        flash('User successfully logged out')
+        return redirect('/login')
+
+    flash('No logged in user')
     return redirect('/login')
 
     
@@ -208,18 +215,20 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def update_profile():
     """Update profile for current user."""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    user = User.query.get(g.user.id)
+
+    user = User.query.get_or_404(g.user.id)
     form = UpdateUserForm(obj=user)
 
     if form.validate_on_submit():
         if not User.authenticate(username=user.username, password=form.password.data):
+            # TODO: re-present form if wrong
             flash("Incorrect Password")
             return redirect(f"/users/{user.id}")
 
@@ -238,7 +247,7 @@ def profile():
                             form=form)
 
 
-
+# TODO: post without CSRF protection
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
     """Delete user."""
@@ -316,9 +325,13 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
+
+TODO: include user
     if g.user:
         messages = (Message
-                    .query
+                    .query.filter(Message.user_id.in_(
+                        [user.id for user in g.user.following])
+                        )
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
