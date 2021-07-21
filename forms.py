@@ -15,7 +15,19 @@ class UserAddForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[Length(min=6)])
-    image_url = StringField('(Optional) Image URL', validators=[Optional(), URL()])
+    image_url = StringField('(Optional) Image URL', validators=[Optional()])
+    
+
+
+class UpdateUserForm(FlaskForm):
+    """Form for adding users."""
+
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    image_url = StringField('(Optional) Image URL', validators=[Optional()])
+    header_image_url = StringField('(Optional) Header Image URL', validators=[Optional()])
+    bio = TextAreaField('(Optional) Bio', validators=[Optional()])
+    password = PasswordField('Current Password', validators=[Length(min=6)])
 
 
 class LoginForm(FlaskForm):
@@ -23,3 +35,6 @@ class LoginForm(FlaskForm):
 
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[Length(min=6)])
+
+
+
