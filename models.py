@@ -4,6 +4,7 @@ from datetime import datetime
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.schema import UniqueConstraint
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -104,6 +105,10 @@ class User(db.Model):
         secondaryjoin=(Follows.user_being_followed_id == id)
     )
 
+    liked_messages = db.relationship('Message', 
+        secondary='likes',
+        backref='liked_by')
+
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
@@ -186,4 +191,16 @@ class Message(db.Model):
         nullable=False,
     )
 
+class Like(db.Model):
+    """An individual like """
+
+    __tablename__ = 'likes'
+
+    message_id = db.Column(db.Integer,
+                db.ForeignKey('messages.id', ondelete='CASCADE'),
+                primary_key=True )
+
+    user_id = db.Column(db.Integer,
+                db.ForeignKey('users.id', ondelete='CASCADE'),
+                primary_key=True)
 
