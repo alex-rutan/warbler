@@ -9,6 +9,18 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 
+
+def connect_db(app):
+    """Connect this database to provided Flask app.
+
+    You should call this in your Flask app.
+    """
+
+    db.app = app
+    db.init_app(app)
+
+
+
 class Follows(db.Model):
     """Connection of a follower <-> followed_user."""
 
@@ -72,7 +84,7 @@ class User(db.Model):
         nullable=False,
     )
 
-    messages = db.relationship('Message', order_by='Message.timestamp.desc()')
+    messages = db.relationship('Message', order_by='Message.timestamp.desc()', backref='user')
 
     followers = db.relationship(
         "User",
@@ -133,7 +145,7 @@ class User(db.Model):
         If can't find matching user (or if password is wrong), returns False.
         """
 
-        user = cls.query.filter_by(username=username).first()
+        user = cls.query.filter_by(username=username).one_or_none()
 
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
@@ -170,14 +182,6 @@ class Message(db.Model):
         nullable=False,
     )
 
-    user = db.relationship('User')
+    # user = db.relationship('User')
 
 
-def connect_db(app):
-    """Connect this database to provided Flask app.
-
-    You should call this in your Flask app.
-    """
-
-    db.app = app
-    db.init_app(app)
