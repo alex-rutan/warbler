@@ -1,8 +1,5 @@
 {% extends 'base.html' %} {% block content %}
 
-<!--TODO: conditionals for and bio, not to be None-->
-<!--TODO: margins between buttons-->
-
 <div
   id="warbler-hero"
   class="full-width"
@@ -46,10 +43,12 @@
           </li>
           <div class="ml-auto">
             {% if g.user.id == user.id %}
-            <a href="/users/profile" class="btn btn-outline-secondary"
-              >Edit Profile</a
-            >
+            <a href="/users/profile" class="btn btn-outline-secondary mx-2" 
+              >Edit Profile</a>
+
             <form method="POST" action="/users/delete" class="form-inline">
+              {{ g.csrf_form.hidden_tag() }} 
+
               <button class="btn btn-outline-danger ml-2">
                 Delete Profile
               </button>

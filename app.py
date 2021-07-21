@@ -31,7 +31,7 @@ connect_db(app)
 ##############################################################################
 # User signup/login/logout
 
-@app.before_first_request
+@app.before_request
 def create_csrf_only_form():
     g.csrf_form = CsrfOnlyForm()
 
@@ -120,7 +120,11 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    if g.user:
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    if g.csrf_form.validate_on_submit():
         do_logout()
         flash('User successfully logged out')
         return redirect('/login')
@@ -228,15 +232,24 @@ def update_profile():
 
     if form.validate_on_submit():
         if not User.authenticate(username=user.username, password=form.password.data):
-            # TODO: re-present form if wrong
+            new_form = UpdateUserForm(obj={
+                                "username": form.username.data,
+                                "email": form.email.data,
+                                "image_url": form.image_url.data or DEFAULT_IMG,
+                                "header_image_url": form.header_image_url.data or DEFAULT_HEADER_IMG,
+                                "location": form.location.data,
+                                "bio": form.bio.data
+                                })
             flash("Incorrect Password")
-            return redirect(f"/users/{user.id}")
+            return render_template("users/edit.html",
+                                    form=new_form)
 
         user.username = form.username.data
         user.email = form.email.data
         user.image_url = form.image_url.data or DEFAULT_IMG
         user.header_image_url = form.header_image_url.data or DEFAULT_HEADER_IMG
         user.bio = form.bio.data
+        user.location = form.location.data
 
         db.session.commit()
 
@@ -247,7 +260,6 @@ def update_profile():
                             form=form)
 
 
-# TODO: post without CSRF protection
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
     """Delete user."""
@@ -256,12 +268,15 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
+    if g.csrf_form.validate_on_submit():
+        do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+        db.session.delete(g.user)
+        db.session.commit()
 
-    return redirect("/signup")
+        return redirect("/signup")
+    
+    return redirect("/")
 
 
 ##############################################################################
@@ -325,13 +340,11 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
 
-
-TODO: include user
     if g.user:
+        followed_user_ids = [user.id for user in g.user.following]
+        followed_user_ids.append(g.user.id)
         messages = (Message
-                    .query.filter(Message.user_id.in_(
-                        [user.id for user in g.user.following])
-                        )
+                    .query.filter(Message.user_id.in_(followed_user_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())

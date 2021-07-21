@@ -27,6 +27,7 @@ class UpdateUserForm(FlaskForm):
     image_url = StringField('(Optional) Image URL', validators=[Optional()])
     header_image_url = StringField('(Optional) Header Image URL', validators=[Optional()])
     bio = TextAreaField('(Optional) Bio', validators=[Optional()])
+    location = StringField('(Optional) location', validators=[Optional()])
     password = PasswordField('Current Password', validators=[Length(min=6)])
 
 
@@ -38,7 +39,7 @@ class LoginForm(FlaskForm):
 
 
 class CsrfOnlyForm(FlaskForm):
-    """TODO"""
+    """Loads form without fields, for CSRF token validation"""
 
 
 

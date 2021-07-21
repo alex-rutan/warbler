@@ -73,10 +73,12 @@ class User(db.Model):
 
     bio = db.Column(
         db.Text,
+        default=""
     )
 
     location = db.Column(
         db.Text,
+        default="The World"
     )
 
     password = db.Column(
@@ -183,7 +185,5 @@ class Message(db.Model):
         db.ForeignKey('users.id', ondelete='CASCADE'),
         nullable=False,
     )
-
-    # user = db.relationship('User')
 
 

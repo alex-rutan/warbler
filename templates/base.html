@@ -57,8 +57,8 @@
           </li>
           <li><a href="/messages/new">New Message</a></li>
           <li>
-            <!--Should this be a tag?-->
             <form action="/logout" method="POST">
+              {{ g.csrf_form.hidden_tag() }}
               <button class="btn btn-link" type="submit">Log out</button>
             </form>
           </li>
