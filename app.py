@@ -109,11 +109,16 @@ def login():
     return render_template('users/login.html', form=form)
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
+   
+    do_logout()
+    flash('User successfully logged out')
+    return redirect('/login')
+
+    
 
 
 ##############################################################################
