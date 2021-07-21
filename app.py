@@ -242,6 +242,7 @@ def messages_add():
         msg = Message(text=form.text.data)
         g.user.messages.append(msg)
         db.session.commit()
+        breakpoint()
 
         return redirect(f"/users/{g.user.id}")
 
