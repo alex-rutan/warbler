@@ -192,6 +192,9 @@ class Message(db.Model):
         nullable=False,
     )
 
+    def __repr__(self):
+        return f'<Message. ID: {self.id}, User ID: {self.user_id}'
+
 
 class Like(db.Model):
     """An individual like """
