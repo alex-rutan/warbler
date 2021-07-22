@@ -255,6 +255,11 @@ nav + .container {
   padding-top: 3px;
 }
 
+.like-btn {
+  position: relative;
+  z-index: 3;
+}
+
 #messages {
   position: relative;
 }

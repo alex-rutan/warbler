@@ -331,23 +331,23 @@ def message_destroy(message_id):
 @app.route('/messages/<int:message_id>/like', methods=["POST"])
 def message_like(message_id):
     """Likes a message for logged in user."""
-
+    
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     msg = Message.query.get(message_id)
-    previous_url = request.url
+    previous_url = request.referrer
 
     if msg not in g.user.liked_messages:
         g.user.liked_messages.append(msg)
         db.session.commit()
-
+        
         return redirect(previous_url)
 
     g.user.liked_messages.remove(msg)
     db.session.commit()
-    
+
     return redirect(previous_url)
 
 ##############################################################################
