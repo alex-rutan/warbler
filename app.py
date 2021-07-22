@@ -187,6 +187,7 @@ def users_followers(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
+
 @app.route('/users/<int:user_id>/likes')
 def users_likes(user_id):
     """Show list of user's likes"""
@@ -197,9 +198,6 @@ def users_likes(user_id):
 
     user = User.query.get_or_404(user_id)
     return render_template('users/likes.html', user=user)
-
-    
-
 
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
@@ -363,13 +361,11 @@ def message_like(message_id):
 
         if msg not in g.user.liked_messages:
             g.user.liked_messages.append(msg)
-            db.session.commit()
 
-            return redirect(previous_url)
-
-        g.user.liked_messages.remove(msg)
+        else:
+            g.user.liked_messages.remove(msg)
+        
         db.session.commit()
-
         return redirect(previous_url)
 
     flash('Unauthorized form submitted')

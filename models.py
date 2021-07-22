@@ -107,7 +107,8 @@ class User(db.Model):
 
     liked_messages = db.relationship('Message', 
         secondary='likes',
-        backref='liked_by')
+        backref='liked_by',
+        order_by="desc(Message.timestamp)")
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
