@@ -191,6 +191,7 @@ class Message(db.Model):
         nullable=False,
     )
 
+
 class Like(db.Model):
     """An individual like """
 

@@ -196,12 +196,15 @@ def add_follow(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get_or_404(follow_id)
-    g.user.following.append(followed_user)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        followed_user = User.query.get_or_404(follow_id)
+        g.user.following.append(followed_user)
+        db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
+        return redirect(f"/users/{g.user.id}/following")
 
+    flash('Unauthorized form submitted')
+    return redirect('/logout')
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
 def stop_following(follow_id):
@@ -211,11 +214,15 @@ def stop_following(follow_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    followed_user = User.query.get(follow_id)
-    g.user.following.remove(followed_user)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        followed_user = User.query.get(follow_id)
+        g.user.following.remove(followed_user)
+        db.session.commit()
 
-    return redirect(f"/users/{g.user.id}/following")
+        return redirect(f"/users/{g.user.id}/following")
+
+    flash('Unauthorized form submitted')
+    return redirect('/logout')
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
@@ -336,19 +343,23 @@ def message_like(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-    previous_url = request.referrer
+    if g.csrf_form.validate_on_submit():
+        msg = Message.query.get(message_id)
+        previous_url = request.referrer
 
-    if msg not in g.user.liked_messages:
-        g.user.liked_messages.append(msg)
+        if msg not in g.user.liked_messages:
+            g.user.liked_messages.append(msg)
+            db.session.commit()
+
+            return redirect(previous_url)
+
+        g.user.liked_messages.remove(msg)
         db.session.commit()
-        
+
         return redirect(previous_url)
 
-    g.user.liked_messages.remove(msg)
-    db.session.commit()
-
-    return redirect(previous_url)
+    flash('Unauthorized form submitted')
+    return redirect('/logout')
 
 ##############################################################################
 # Homepage and error pages
