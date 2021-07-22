@@ -19,7 +19,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
 # Now we can import app
 
-from app import app
+from app import app, DEFAULT_IMG
 
 # Create our tables (we do this here, so we only create the tables
 # once for all tests --- in each test, we'll delete the data
@@ -53,37 +53,99 @@ class UserModelTestCase(TestCase):
         db.session.add_all([u, u2])
         db.session.commit()
 
-        self.u = u
-        self.u2 = u2
+        self.u = u.id
+        self.u2 = u2.id
 
         self.client = app.test_client()
+
+    # def tearDown(self):
+    #     return super().tearDown()
 
     def test_user_model(self):
         """Does basic model work?"""
 
-        
+        u = User.query.get(self.u)
 
         # User should have no messages & no followers
-        self.assertEqual(len(self.u.messages), 0)
-        self.assertEqual(len(self.u.followers), 0)
+        self.assertEqual(len(u.messages), 0)
+        self.assertEqual(len(u.followers), 0)
+
 
     def test_is_following(self):
         """Does is_following detect when a user follows another user?"""
 
-        self.u.followers.append(self.u2)
+        u = User.query.get(self.u)
+        u2 = User.query.get(self.u2)
+
+        u.followers.append(u2)
         db.session.commit()
 
-        self.assertEqual(self.u2.is_following(self.u), True)
-        self.assertEqual(self.u.is_following(self.u2), False)
-        self.assertIn(self.u, self.u2.following)
+        self.assertEqual(u2.is_following(u), True)
+        self.assertEqual(u.is_following(u2), False)
+        self.assertIn(u, u2.following)
+
 
     def test_is_followed_by(self):
         """Does is_followed_by detect when a user is followed by another user"""
 
-        self.u.following.append(self.u2)
+        u = User.query.get(self.u)
+        u2 = User.query.get(self.u2)
 
-        self.assertEqual(self.u2.is_followed_by(self.u), True)
-        self.assertEqual(self.u.is_followed_by(self.u2), False)
-        self.assertIn(self.u, self.u2.followers)
+        u.following.append(u2)
+        db.session.commit()
+
+        self.assertEqual(u2.is_followed_by(u), True)
+        self.assertEqual(u.is_followed_by(u2), False)
+        self.assertIn(u, u2.followers)
+
+
+    def test_signup(self):
+        """Does User.signup() successfully create a new user given valid credentials"""
+
+        user3 = User.signup(username = "testuser3", 
+                    email = "user3@gmail.com", 
+                    password = "password", 
+                    image_url = DEFAULT_IMG)
+
+        db.session.add(user3)
+        db.session.commit()
+
+        self.assertIn(user3, User.query.all())
+        
+
+    def test_signup_failure(self):
+        """Does User.signup() fail if not given valid credentials"""
+
+        user3 = User.signup(username = "testuser3", 
+                    email = "", 
+                    password = "password", 
+                    image_url = DEFAULT_IMG)
+
+        db.session.add(user3)
+        db.session.commit()
+
+        self.assertRaises(ValueError) 
+
+
+    def test_authenticate(self):
+        """Does User.authenticate successfully return a user when given a valid username and password?"""
+
+        user3 = User.signup(username = "testuser3", 
+                    email = "testuser3@gmail.com", 
+                    password = "password", 
+                    image_url = DEFAULT_IMG)
+
+        db.session.add(user3)
+        db.session.commit()
+
+        user = User.authenticate(username = user3.username, 
+                                    password = "password")
+        
+        self.assertTrue(user)
+       
+
+
+
+
 
 
