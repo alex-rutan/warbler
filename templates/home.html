@@ -49,14 +49,18 @@
       {% for msg in messages %}
       <li class="list-group-item">
         <!-- If user has liked the message-->
-        {% if msg in user_likes %}
-        <i class="fas fa-star"></i>
-        {% endif %}
-        <!-- If user has no liked the message-->
-        {% if msg not in user_likes %}
-        <i class="far fa-star"></i>
-        {% endif %}
-
+        <form action="/messages/{{ msg.id }}/like" method="POST">
+          <button type="submit">
+            {% if msg in g.user.liked_messages %}
+            <i class="fas fa-star"></i>
+            {% endif %}
+            <!-- If user has no liked the message-->
+            {% if msg not in g.user.liked_messages %}
+            <i class="far fa-star"></i>
+            {% endif %}
+          </button>
+        </form>
+        
         <a href="/messages/{{ msg.id }}" class="message-link" />
         <a href="/users/{{ msg.user.id }}">
           <img src="{{ msg.user.image_url }}" alt="" class="timeline-image" />

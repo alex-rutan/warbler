@@ -283,7 +283,7 @@ def delete_user():
 # Messages routes:
 
 @app.route('/messages/new', methods=["GET", "POST"])
-def messages_add():
+def message_add():
     """Add a message:
 
     Show form if GET. If valid, update message and redirect to user page.
@@ -306,7 +306,7 @@ def messages_add():
 
 
 @app.route('/messages/<int:message_id>', methods=["GET"])
-def messages_show(message_id):
+def message_show(message_id):
     """Show a message."""
 
     msg = Message.query.get(message_id)
@@ -314,7 +314,7 @@ def messages_show(message_id):
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
-def messages_destroy(message_id):
+def message_destroy(message_id):
     """Delete a message."""
 
     if not g.user:
@@ -327,6 +327,28 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+
+@app.route('/messages/<int:message_id>/like', methods=["POST"])
+def message_like(message_id):
+    """Likes a message for logged in user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    msg = Message.query.get(message_id)
+    previous_url = request.url
+
+    if msg not in g.user.liked_messages:
+        g.user.liked_messages.append(msg)
+        db.session.commit()
+
+        return redirect(previous_url)
+
+    g.user.liked_messages.remove(msg)
+    db.session.commit()
+    
+    return redirect(previous_url)
 
 ##############################################################################
 # Homepage and error pages
@@ -349,7 +371,7 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages, user_likes=g.user.liked_messages)
+        return render_template('home.html', messages=messages)
 
     else:
         return render_template('home-anon.html')
