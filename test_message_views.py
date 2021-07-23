@@ -68,7 +68,7 @@ class MessageViewTestCase(TestCase):
 
 
     def test_add_message(self):
-        """Can user add a message?"""
+        """Test that user can add a message"""
 
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
@@ -90,7 +90,7 @@ class MessageViewTestCase(TestCase):
 
 
     def test_display_add_message_form(self):
-        """Does add a message form display?"""
+        """Test that the add message form displays properly"""
 
         with self.client as c:
             with c.session_transaction() as sess:
@@ -103,8 +103,8 @@ class MessageViewTestCase(TestCase):
             self.assertIn('id="add-message-form"', html)
 
 
-    def test_add_message_logged_out(self):
-        """Can user not add a message when logged out?"""
+    def test_cannot_add_message_logged_out(self):
+        """Test that user cannot add a message when logged out"""
         
         with self.client as c:
 
@@ -116,7 +116,7 @@ class MessageViewTestCase(TestCase):
 
 
     def test_show_message(self):
-        """Does the show message route function properly?"""
+        """Test that the show message route functions properly"""
         
         with self.client as c:
             with c.session_transaction() as sess:
@@ -128,9 +128,9 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn("testmessage", html)
 
-    
-    def test_delete_message(self):
-        """Does the delete message route function properly?"""
+    # TODO: add can/cannot for positive/negative test names for better pattern
+    def test_can_delete_message(self):
+        """Test that the delete message route functions properly"""
         
         with self.client as c:
             with c.session_transaction() as sess:
@@ -143,8 +143,8 @@ class MessageViewTestCase(TestCase):
             self.assertNotIn("testmessage", html)
 
 
-    def test_delete_message_other_user(self):
-        """Is a logged in user prevented from deleting another user's messages?"""
+    def test_cannot_delete_message_other_user(self):
+        """Test that a logged in user is prevented from deleting another user's messages"""
         
         with self.client as c:
             with c.session_transaction() as sess:
@@ -172,7 +172,7 @@ class MessageViewTestCase(TestCase):
 
 
     def test_delete_message_logged_out(self):
-        """Does the delete message route not function properly if logged out?"""
+        """Test that the delete message route doesn't function properly if logged out"""
         
         with self.client as c:
 

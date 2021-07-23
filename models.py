@@ -196,8 +196,6 @@ class Message(db.Model):
     def is_liked_by(self, username):
         """Is this message liked by 'user'?"""
      
-      
-
         if username in [user.username for user in self.liked_by]:
             return True
 

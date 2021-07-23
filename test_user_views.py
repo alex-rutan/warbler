@@ -42,6 +42,7 @@ class UserViewTestCase(TestCase):
 
         self.client = app.test_client()
 
+# TESTUSER VARIABLE SHOULD MATCH PREVIOUS TESTS(U, U2 ETC.)
         self.testuser = User.signup(username="testuser",
                                     email="test@test.com",
                                     password="testuser",
@@ -67,7 +68,7 @@ class UserViewTestCase(TestCase):
 
 
     def test_show_following(self):
-        """Can you see a different user's following page?"""
+        """Test that you can see a different user's following page"""
 
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
@@ -83,7 +84,6 @@ class UserViewTestCase(TestCase):
             username="testuser2",
             password="HASHED_PASSWORD",
             image_url = DEFAULT_IMG)
-
 
             db.session.commit()
 
@@ -92,26 +92,21 @@ class UserViewTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('id="followed-user-container"', html)
+            # TODO could test that username is in the html - protects against changes to id in the future
 
 
     def test_show_followers(self):
-        """Can you see a different user's followers page?"""
-
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
+        """Test that you see a different user's followers page"""
 
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser.id
-
-            # Now, that session setting is saved, so we can have
             
             u2 = User.signup(
             email="test2@test.com",
             username="testuser2",
             password="HASHED_PASSWORD",
             image_url = DEFAULT_IMG)
-
 
             db.session.commit()
 
@@ -123,16 +118,9 @@ class UserViewTestCase(TestCase):
 
 
     def test_show_followers_logged_out(self):
-        """Can you see a different user's followers page?"""
-
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
+        """Test that you can't see a user's followers page when logged out"""
 
         with self.client as c:
-            # with c.session_transaction() as sess:
-            #     sess[CURR_USER_KEY] = self.testuser.id
-
-            # Now, that session setting is saved, so we can have
             
             u2 = User.signup(
             email="test2@test.com",
@@ -140,10 +128,31 @@ class UserViewTestCase(TestCase):
             password="HASHED_PASSWORD",
             image_url = DEFAULT_IMG)
 
-
             db.session.commit()
 
             resp = c.get(f'/users/{u2.id}/followers')
-            # html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 302)
+
+    
+    def test_update_other_user(self):
+        """Test that a logged in user is prevented from updating another user's profile"""
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            u = User(
+            email="test2@test.com",
+            username="testuser2",
+            password="HASHED_PASSWORD"
+            )
+
+            db.session.add(u)
+            db.session.commit()
+
+            resp = c.get(f"/users/{u.id}")
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn('id="edit-user-btn"', html)
