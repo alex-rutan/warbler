@@ -58,8 +58,6 @@ class UserModelTestCase(TestCase):
 
         self.client = app.test_client()
 
-    # def tearDown(self):
-    #     return super().tearDown()
 
     def tearDown(self):
         res = super().tearDown()
@@ -119,10 +117,10 @@ class UserModelTestCase(TestCase):
         
 
     def test_signup_failure(self):
-        """Does User.signup() fail if not given valid credentials"""
+        """Does User.signup() fail if given invalid credentials (email is "bad" in test)"""
 
         user3 = User.signup(username = "testuser3", 
-                    email = "", 
+                    email = "bad", 
                     password = "password", 
                     image_url = DEFAULT_IMG)
 
@@ -134,6 +132,7 @@ class UserModelTestCase(TestCase):
 
     def test_authenticate(self):
         """Does User.authenticate successfully return a user when given a valid username and password?"""
+        #TODO: SKIP SIGNUP HERE, use setup 
 
         user3 = User.signup(username = "testuser3", 
                     email = "testuser3@gmail.com", 
@@ -152,16 +151,14 @@ class UserModelTestCase(TestCase):
     def test_authenticate_bad_username(self):
         """Does authentication fail with an invalid username?""" 
 
-
         authentication_result = User.authenticate(username = 'bad', 
                                     password = 'HASHED_PASSWORD') 
-
 
         self.assertFalse(authentication_result)  
 
 
     def test_authenticate_bad_password(self):
-        """Does authentication fail with an invalid username?""" 
+        """Does authentication fail with an invalid password?""" 
 
         user3 = User.signup(username = "testuser3", 
                     email = "testuser3@gmail.com", 
@@ -171,10 +168,8 @@ class UserModelTestCase(TestCase):
         db.session.add(user3)
         db.session.commit()
 
-
         authentication_result = User.authenticate                   (username='testuser3',
             password='bad')
-
 
         self.assertFalse(authentication_result)  
        

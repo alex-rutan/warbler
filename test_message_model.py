@@ -82,9 +82,8 @@ class MessageModelTestCase(TestCase):
 
         db.session.commit()
 
-        
-
         self.assertTrue(m1.is_liked_by(u.username))
+
 
     def test_is_liked_by_false(self):
         """Does is_liked_by fail if user not in message.liked_by?"""

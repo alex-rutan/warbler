@@ -85,7 +85,7 @@ def signup():
             db.session.commit()
 
         except IntegrityError:
-            flash("Username already taken", 'danger')
+            flash("Username or Email already taken", 'danger')
             return render_template('users/signup.html', form=form)
 
         do_login(user)
@@ -126,10 +126,10 @@ def logout():
 
     if g.csrf_form.validate_on_submit():
         do_logout()
-        flash('User successfully logged out')
+        flash('User successfully logged out', "success")
         return redirect('/login')
 
-    flash('No logged in user')
+    flash('No logged in user', "danger")
     return redirect('/login')
 
     
@@ -215,7 +215,7 @@ def add_follow(follow_id):
 
         return redirect(f"/users/{g.user.id}/following")
 
-    flash('Unauthorized form submitted')
+    flash('Unauthorized form submitted', "danger")
     return redirect('/logout')
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
@@ -233,7 +233,7 @@ def stop_following(follow_id):
 
         return redirect(f"/users/{g.user.id}/following")
 
-    flash('Unauthorized form submitted')
+    flash('Unauthorized form submitted', "danger")
     return redirect('/logout')
 
 
@@ -259,7 +259,7 @@ def update_profile():
                                 "location": form.location.data,
                                 "bio": form.bio.data
                                 })
-            flash("Incorrect Password")
+            flash("Incorrect Password", "danger")
             return render_template("users/edit.html",
                                     form=new_form)
 
@@ -272,7 +272,7 @@ def update_profile():
 
         db.session.commit()
 
-        flash("Profile successfully updated")
+        flash("Profile successfully updated", "success")
         return redirect(f"/users/{user.id}")
 
     return render_template("users/edit.html",
@@ -293,6 +293,7 @@ def delete_user():
         db.session.delete(g.user)
         db.session.commit()
 
+        flash("Profile successfully deleted", "success")
         return redirect("/signup")
     
     return redirect("/")
@@ -340,11 +341,15 @@ def message_destroy(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-    db.session.delete(msg)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        msg = Message.query.get(message_id)
+        db.session.delete(msg)
+        db.session.commit()
 
-    return redirect(f"/users/{g.user.id}")
+        return redirect(f"/users/{g.user.id}")
+
+    flash('Unauthorized form submitted', "danger")
+    return redirect('/logout')
 
 
 @app.route('/messages/<int:message_id>/like', methods=["POST"])
@@ -368,7 +373,7 @@ def message_like(message_id):
         db.session.commit()
         return redirect(previous_url)
 
-    flash('Unauthorized form submitted')
+    flash('Unauthorized form submitted', "danger")
     return redirect('/logout')
 
 ##############################################################################
