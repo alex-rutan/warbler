@@ -66,6 +66,12 @@ class MessageModelTestCase(TestCase):
         self.u2 = u2.id
 
 
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+
+
     def test_is_liked_by(self):
         """Does user like this message?"""
 

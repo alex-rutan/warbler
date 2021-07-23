@@ -61,6 +61,11 @@ class UserModelTestCase(TestCase):
     # def tearDown(self):
     #     return super().tearDown()
 
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+
     def test_user_model(self):
         """Does basic model work?"""
 

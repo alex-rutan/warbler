@@ -61,6 +61,12 @@ class MessageViewTestCase(TestCase):
         self.message_id = self.message.id
 
 
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+
+
     def test_add_message(self):
         """Can user add a message?"""
 
