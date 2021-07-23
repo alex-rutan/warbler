@@ -193,8 +193,18 @@ class Message(db.Model):
         nullable=False,
     )
 
+    def is_liked_by(self, username):
+        """Is this message liked by 'user'?"""
+     
+      
+
+        if username in [user.username for user in self.liked_by]:
+            return True
+
+        return False
+
     def __repr__(self):
-        return f'<Message. ID: {self.id}, User ID: {self.user_id}'
+        return f'<Message. ID: {self.id}, User ID: {self.user_id}>'
 
 
 class Like(db.Model):

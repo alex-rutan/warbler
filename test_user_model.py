@@ -138,10 +138,40 @@ class UserModelTestCase(TestCase):
         db.session.add(user3)
         db.session.commit()
 
-        user = User.authenticate(username = user3.username, 
+        u3 = User.authenticate(username = user3.username, 
                                     password = "password")
         
-        self.assertTrue(user)
+        self.assertTrue(u3)
+
+
+    def test_authenticate_bad_username(self):
+        """Does authentication fail with an invalid username?""" 
+
+
+        authentication_result = User.authenticate(username = 'bad', 
+                                    password = 'HASHED_PASSWORD') 
+
+
+        self.assertFalse(authentication_result)  
+
+
+    def test_authenticate_bad_password(self):
+        """Does authentication fail with an invalid username?""" 
+
+        user3 = User.signup(username = "testuser3", 
+                    email = "testuser3@gmail.com", 
+                    password = "password", 
+                    image_url = DEFAULT_IMG)
+
+        db.session.add(user3)
+        db.session.commit()
+
+
+        authentication_result = User.authenticate                   (username='testuser3',
+            password='bad')
+
+
+        self.assertFalse(authentication_result)  
        
 
 
