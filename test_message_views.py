@@ -50,6 +50,16 @@ class MessageViewTestCase(TestCase):
 
         db.session.commit()
 
+        self.testuser_id = self.testuser.id
+
+        self.message = Message(text = "testmessage",
+                                user_id = self.testuser.id)
+        
+        db.session.add(self.message)
+        db.session.commit()
+
+        self.message_id = self.message.id
+
 
     def test_add_message(self):
         """Can user add a message?"""
@@ -69,7 +79,7 @@ class MessageViewTestCase(TestCase):
             # Make sure it redirects
             self.assertEqual(resp.status_code, 302)
 
-            msg = Message.query.one()
+            msg = Message.query.filter(Message.text == "Hello").one()
             self.assertEqual(msg.text, "Hello")
 
 
@@ -86,3 +96,30 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('id="add-message-form"', html)
 
+
+    def test_show_message(self):
+        """Does the show message route function properly?"""
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            resp = c.get(f'/messages/{self.message_id}')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("testmessage", html)
+
+    
+    def test_delete_message(self):
+        """Does the show message route function properly?"""
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            resp = c.post(f'/messages/{self.message_id}/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn("testmessage", html)
