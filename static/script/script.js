@@ -2,17 +2,19 @@
 
 const $body = $("body");
 
-$body.on("click", "i", toggleLike);
+$body.on("click", ".like-btn", toggleLike);
 
 function toggleLike(e) {
   e.preventDefault();
 
-  //   console.log(e.target);
   let $target = $(e.target);
-  console.log($target);
-  let $star = $target.next();
-  //   console.log($star);
+  let $star = $target;
+  if ($target.hasClass("btn")) {
+    $star = $target.children()
+  }
+  // console.log($target);
+    // console.log($star);
 
-  $target.toggleClass("fas");
-  $target.toggleClass("far");
+  $star.toggleClass("fas");
+  $star.toggleClass("far");
 }
