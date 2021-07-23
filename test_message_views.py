@@ -103,13 +103,25 @@ class MessageViewTestCase(TestCase):
             self.assertIn('id="add-message-form"', html)
 
 
+    def test_add_message_logged_out(self):
+        """Can user not add a message when logged out?"""
+        
+        with self.client as c:
+
+            resp = c.post("/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+
+
     def test_show_message(self):
         """Does the show message route function properly?"""
         
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser.id
-
+        
             resp = c.get(f'/messages/{self.message_id}')
             html = resp.get_data(as_text=True)
 
@@ -118,7 +130,7 @@ class MessageViewTestCase(TestCase):
 
     
     def test_delete_message(self):
-        """Does the show message route function properly?"""
+        """Does the delete message route function properly?"""
         
         with self.client as c:
             with c.session_transaction() as sess:
@@ -129,3 +141,46 @@ class MessageViewTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn("testmessage", html)
+
+
+    def test_delete_message_other_user(self):
+        """Is a logged in user prevented from deleting another user's messages?"""
+        
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            u = User(
+            email="test2@test.com",
+            username="testuser2",
+            password="HASHED_PASSWORD"
+            )
+
+            db.session.add(u)
+            db.session.commit()
+
+            m1 = Message(text='testmessage', user_id=u.id)
+
+            db.session.add(m1)
+            db.session.commit()
+
+            resp = c.get(f'/messages/{m1.id}', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn('<button class="btn btn-outline-danger">Delete</button>', html)
+
+
+    def test_delete_message_logged_out(self):
+        """Does the delete message route not function properly if logged out?"""
+        
+        with self.client as c:
+
+            resp = c.post(f'/messages/{self.message_id}/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized.", html)
+
+
+    

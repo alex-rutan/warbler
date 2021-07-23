@@ -340,11 +340,15 @@ def message_destroy(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-    db.session.delete(msg)
-    db.session.commit()
+    if g.csrf_form.validate_on_submit():
+        msg = Message.query.get(message_id)
+        db.session.delete(msg)
+        db.session.commit()
 
-    return redirect(f"/users/{g.user.id}")
+        return redirect(f"/users/{g.user.id}")
+
+    flash('Unauthorized form submitted')
+    return redirect('/logout')
 
 
 @app.route('/messages/<int:message_id>/like', methods=["POST"])
