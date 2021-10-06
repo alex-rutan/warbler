@@ -11,13 +11,12 @@ CURR_USER_KEY = "curr_user"
 DEFAULT_IMG = "/static/images/default-pic.png"
 DEFAULT_HEADER_IMG = "/static/images/warbler-hero.jpg"
 
-
-app = Flask(__name__)
-
 database_url = os.environ.get('DATABASE_URL', 'postgresql:///warbler')
 # fix incorrect database URIs currently returned by Heroku's pg setup
 database_url = database_url.replace('postgres://', 'postgresql://')
 
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
 # app.config['SQLALCHEMY_DATABASE_URI'] = (
